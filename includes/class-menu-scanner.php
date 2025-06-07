@@ -16,20 +16,33 @@ class GoToAI_Menu_Scanner {
         $menus = array();
         foreach ($menu as $item) {
             $menu_slug = isset($item[2]) ? $item[2] : '';
+            $url = '';
+            if ($menu_slug) {
+                $url = (strpos($menu_slug, '.php') !== false)
+                    ? admin_url($menu_slug)
+                    : admin_url('admin.php?page=' . $menu_slug);
+            }
             $menus[$menu_slug] = array(
                 'title' => isset($item[0]) ? wp_strip_all_tags($item[0]) : '',
                 'slug'  => $menu_slug,
                 'parent'=> null,
-                'url'   => isset($item[2]) ? admin_url($item[2]) : '',
+                'url'   => $url,
                 'children' => array(),
             );
             if (isset($submenu[$menu_slug])) {
                 foreach ($submenu[$menu_slug] as $subitem) {
+                    $sub_slug = isset($subitem[2]) ? $subitem[2] : '';
+                    $sub_url = '';
+                    if ($sub_slug) {
+                        $sub_url = (strpos($sub_slug, '.php') !== false)
+                            ? admin_url($sub_slug)
+                            : admin_url('admin.php?page=' . $sub_slug);
+                    }
                     $menus[$menu_slug]['children'][] = array(
                         'title' => isset($subitem[0]) ? wp_strip_all_tags($subitem[0]) : '',
-                        'slug'  => isset($subitem[2]) ? $subitem[2] : '',
+                        'slug'  => $sub_slug,
                         'parent'=> $menu_slug,
-                        'url'   => isset($subitem[2]) ? admin_url($subitem[2]) : '',
+                        'url'   => $sub_url,
                     );
                 }
             }
