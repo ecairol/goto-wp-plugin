@@ -75,6 +75,13 @@ class GoToAI_Settings {
 		?>
 		<div class="wrap">
 			<h1>GoTo AI Settings</h1>
+			<div style="background:#f8f9fa;border:1px solid #e5e5e5;padding:16px 20px;margin-bottom:20px;border-radius:6px;max-width:700px;">
+				<strong>Instructions:</strong><br>
+				Use <b>GoTo AI</b> to quickly find and navigate to any WordPress admin screen.<br>
+				Open the search modal by clicking the <b>GoTo AI</b> button in the admin bar, or by pressing <b>Cmd+K</b> (Mac) or <b>Ctrl+K</b> (Windows/Linux) anywhere in the admin.<br>
+				Start typing to search for admin screens, then click a result to go directly to that screen.<br>
+				You can rescan menus at any time if you install or remove plugins.
+			</div>
 			<form method="post" action="options.php">
 				<?php
 				settings_fields('goto_ai_settings_group');
