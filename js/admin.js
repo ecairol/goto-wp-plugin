@@ -1,0 +1,1 @@
+// JavaScript for GoTo AI admin/settings page 
