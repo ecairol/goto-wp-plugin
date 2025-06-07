@@ -1,5 +1,5 @@
 === GoTo AI ===
-Contributors: (your name)
+Contributors: ecairol
 Tags: admin, search, ai, navigation
 Requires at least: 5.0
 Tested up to: 6.5
