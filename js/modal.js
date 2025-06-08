@@ -3,6 +3,9 @@
 	let modal, overlay, input, results;
 	let menuData = [];
 	let selectedIndex = -1;
+	let llmTimeout = null;
+	let lastQuery = '';
+	let lastInputValue = '';
 
 	function createModal() {
 		if ($('.goto-ai-modal').length) return;
@@ -12,6 +15,7 @@
 				<button class="goto-ai-modal-close">&times;</button>
 				<input class="goto-ai-modal-input" type="text" placeholder="Search admin screens..." autocomplete="off" />
 				<ul id="goto-ai-modal-results"></ul>
+				<div id="goto-ai-llm-suggestions" style="margin-top:12px;"></div>
 			</div>
 		`);
 		modal = $('.goto-ai-modal');
@@ -28,13 +32,17 @@
 		overlay.show();
 		input.val('').focus();
 		results.empty();
+		$('#goto-ai-llm-suggestions').empty();
 		selectedIndex = -1;
+		lastQuery = '';
+		lastInputValue = '';
 		if (menuData.length === 0) fetchMenus();
 	}
 
 	function closeModal() {
 		modal.hide();
 		overlay.hide();
+		if (llmTimeout) clearTimeout(llmTimeout);
 	}
 
 	function fetchMenus() {
@@ -75,11 +83,42 @@
 		if (filtered.length === 0) {
 			results.html('<li>No results found</li>');
 			selectedIndex = -1;
-			return;
+		} else {
+			filtered.forEach((item, idx) => {
+				const selectedClass = idx === selectedIndex ? 'goto-ai-selected' : '';
+				results.append(`<li class="${selectedClass}" data-url="${item.url}"><a href="#" tabindex="-1">${item.title}</a></li>`);
+			});
 		}
-		filtered.forEach((item, idx) => {
-			const selectedClass = idx === selectedIndex ? 'goto-ai-selected' : '';
-			results.append(`<li class="${selectedClass}" data-url="${item.url}"><a href="#" tabindex="-1">${item.title}</a></li>`);
+		// LLM suggestions: clear and set up delayed fetch
+		$('#goto-ai-llm-suggestions').empty();
+		if (llmTimeout) clearTimeout(llmTimeout);
+		if (query.trim().length > 0) {
+			lastQuery = query;
+			llmTimeout = setTimeout(function() {
+				fetchLLMSuggestions(query);
+			}, 2000);
+		}
+	}
+
+	function fetchLLMSuggestions(query) {
+		$.ajax({
+			url: GoToAI.apiUrl.replace('/menus', '/search'),
+			type: 'POST',
+			data: JSON.stringify({ query: query }),
+			contentType: 'application/json',
+			beforeSend: function(xhr) {
+				xhr.setRequestHeader('X-WP-Nonce', GoToAI.nonce);
+			}
+		})
+		.done(function(data) {
+			if (query !== lastQuery) return; // Only show if still relevant
+			if (data.llm && data.llm.length > 0) {
+				let html = '<div style="font-size:13px;color:#888;margin-bottom:4px;">AI Suggestions</div>';
+				data.llm.forEach(function(item) {
+					html += `<div class="goto-ai-llm-suggestion"><a href="${item.url || '#'}">${item.title}</a></div>`;
+				});
+				$('#goto-ai-llm-suggestions').html(html);
+			}
 		});
 	}
 
@@ -122,7 +161,8 @@
 	// Filter results as user types
 	$(document).on('input', '.goto-ai-modal-input', function() {
 		selectedIndex = -1;
-		showResults($(this).val());
+		lastInputValue = $(this).val();
+		showResults(lastInputValue);
 	});
 
 	// Keyboard navigation for modal input
@@ -134,12 +174,15 @@
 		if (e.key === 'ArrowDown') {
 			e.preventDefault();
 			selectedIndex = (selectedIndex + 1) % filtered.length;
-			showResults(query);
+			// Only update selection, do not trigger new search or LLM
+			results.children().removeClass('goto-ai-selected');
+			results.children().eq(selectedIndex).addClass('goto-ai-selected');
 			scrollToSelected();
 		} else if (e.key === 'ArrowUp') {
 			e.preventDefault();
 			selectedIndex = (selectedIndex - 1 + filtered.length) % filtered.length;
-			showResults(query);
+			results.children().removeClass('goto-ai-selected');
+			results.children().eq(selectedIndex).addClass('goto-ai-selected');
 			scrollToSelected();
 		} else if (e.key === 'Enter') {
 			if (selectedIndex >= 0 && filtered[selectedIndex]) {
