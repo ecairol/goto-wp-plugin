@@ -95,9 +95,14 @@
 		if (query.trim().length > 0) {
 			lastQuery = query;
 			llmTimeout = setTimeout(function() {
+				showLLMLoading();
 				fetchLLMSuggestions(query);
-			}, 2000);
+			}, 400);
 		}
+	}
+
+	function showLLMLoading() {
+		$('#goto-ai-llm-suggestions').html('<div style="font-size:13px;color:#888;">AI Suggestions</div><div>Loading...</div>');
 	}
 
 	function fetchLLMSuggestions(query) {
@@ -118,6 +123,8 @@
 					html += `<div class="goto-ai-llm-suggestion"><a href="${item.url || '#'}">${item.title}</a></div>`;
 				});
 				$('#goto-ai-llm-suggestions').html(html);
+			} else {
+				$('#goto-ai-llm-suggestions').empty();
 			}
 		});
 	}
