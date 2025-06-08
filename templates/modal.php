@@ -1,2 +1,2 @@
 <?php
-// Template for GoTo AI search modal 
+// Template for Jinx search modal 

@@ -1,2 +1,2 @@
 <?php
-// Helper functions for GoTo AI plugin 
+// Helper functions for Jinx plugin 

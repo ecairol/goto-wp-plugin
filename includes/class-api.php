@@ -1,8 +1,8 @@
 <?php
-// Handles REST API endpoints for GoTo AI
-class GoToAI_API {
+// Handles REST API endpoints for Jinx
+class Jinx_API {
 	public static function register_routes() {
-		register_rest_route('goto-ai/v1', '/menus', array(
+		register_rest_route('jinx/v1', '/menus', array(
 			'methods'  => 'GET',
 			'callback' => array(__CLASS__, 'get_menus'),
 			'permission_callback' => function() {
@@ -10,7 +10,7 @@ class GoToAI_API {
 			},
 		));
 
-		register_rest_route('goto-ai/v1', '/search', array(
+		register_rest_route('jinx/v1', '/search', array(
 			'methods'  => 'POST',
 			'callback' => array(__CLASS__, 'search'),
 			// 'permission_callback' => function() {
@@ -20,13 +20,13 @@ class GoToAI_API {
 	}
 
 	public static function get_menus($request) {
-		$menus = get_option('goto_ai_admin_menus');
+		$menus = get_option('jinx_admin_menus');
 		return rest_ensure_response($menus);
 	}
 
 	public static function search($request) {
 		$query = sanitize_text_field($request->get_param('query'));
-		$menus = get_option('goto_ai_admin_menus');
+		$menus = get_option('jinx_admin_menus');
 		$flat = self::flatten_menus($menus);
 
 		// Local fuzzy search
@@ -35,7 +35,7 @@ class GoToAI_API {
 		}));
 
 		// LLM provider (dummy for now)
-		$llm_results = GoToAI_LLM::search($query, $flat);
+		$llm_results = Jinx_LLM::search($query, $flat);
 
 		return rest_ensure_response([
 			'local' => $local_results,
@@ -68,4 +68,4 @@ class GoToAI_API {
 	}
 }
 
-add_action('rest_api_init', array('GoToAI_API', 'register_routes')); 
+add_action('rest_api_init', array('Jinx_API', 'register_routes')); 

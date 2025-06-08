@@ -1,6 +1,6 @@
 <?php
 // Handles scanning and mapping of WordPress admin menus
-class GoToAI_Menu_Scanner {
+class Jinx_Menu_Scanner {
     /**
      * Scan all admin menus and submenus and store them in a WordPress option
      */
@@ -47,7 +47,7 @@ class GoToAI_Menu_Scanner {
                 }
             }
         }
-        update_option('goto_ai_admin_menus', $menus);
+        update_option('jinx_admin_menus', $menus);
     }
 
     /**
@@ -60,8 +60,8 @@ class GoToAI_Menu_Scanner {
 }
 
 // Scan menus on plugin activation
-register_activation_hook(__FILE__, array('GoToAI_Menu_Scanner', 'scan_and_store_menus'));
+register_activation_hook(__FILE__, array('Jinx_Menu_Scanner', 'scan_and_store_menus'));
 // Hook to plugin changes
-GoToAI_Menu_Scanner::hook_plugin_changes();
+Jinx_Menu_Scanner::hook_plugin_changes();
 
 // TODO: Implement menu scanning logic

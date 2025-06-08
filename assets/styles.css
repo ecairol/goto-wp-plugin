@@ -1,6 +1,6 @@
-/* Styles for GoTo AI modal and settings page */ 
+/* Styles for Jinx modal and settings page */ 
 
-.goto-ai-modal-overlay {
+.jinx-modal-overlay {
 	position: fixed;
 	top: 0;
 	left: 0;
@@ -11,7 +11,7 @@
 	display: none;
 }
 
-.goto-ai-modal {
+.jinx-modal {
 	position: fixed;
 	top: 10vh;
 	left: 50%;
@@ -26,14 +26,14 @@
 	display: none;
 }
 
-.goto-ai-modal-input {
+.jinx-modal-input {
 	width: 100%;
 	padding: 8px 12px;
 	font-size: 16px;
 	margin-bottom: 12px;
 }
 
-#goto-ai-modal-results {
+#jinx-modal-results {
 	list-style: none;
 	padding: 0;
 	margin: 0;
@@ -41,11 +41,11 @@
 	overflow: auto;
 }
 
-#goto-ai-modal-results li {
+#jinx-modal-results li {
 	padding: 6px 0;
 }
 
-#goto-ai-modal-results li a {
+#jinx-modal-results li a {
 	text-decoration: none;
 	display: block;
 	width: 100%;
@@ -53,16 +53,16 @@
 	padding: 0.2rem;
 }
 
-.goto-ai-selected {
+.jinx-selected {
 	background: #4F8EF7;
 	color: #fff;
 	border-radius: 4px;
 }
-.goto-ai-selected a {
+.jinx-selected a {
 	color: #fff;
 }
 
-.goto-ai-modal-close {
+.jinx-modal-close {
 	position: absolute;
 	top: 8px;
 	right: 12px;

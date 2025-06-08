@@ -1,10 +1,10 @@
-# GoTo AI
+# Jinx
 
-GoTo AI helps WordPress admins quickly find and navigate to any admin screen using an AI-powered search modal. No more clicking through endless menus—just search and go!
+Jinx helps WordPress admins quickly find and navigate to any admin screen using an AI-powered search modal. No more clicking through endless menus—just search and go!
 
 ## Features
 - Search for any admin screen by keyword
-- Modal opens via admin bar button or keyboard shortcut (Cmd+K / Ctrl+K)
+- Modal opens via admin bar button or keyboard shortcut (Cmd+J / Ctrl+J)
 - Instant filtering of all admin and plugin menu items
 - Keyboard navigation (up/down/enter) in the modal
 - Secure REST API endpoint for menu data
@@ -13,16 +13,19 @@ GoTo AI helps WordPress admins quickly find and navigate to any admin screen usi
 
 ## Screenshot
 
-![GoTo AI Modal Screenshot](assets/screenshots/screenshot-1.png)
+![Jinx Modal Screenshot](assets/screenshots/screenshot-1.png)
+
+Jinx will try to find the most probable screen you're looking for:
+![Jinx Modal Screenshot](assets/screenshots/screenshot-2.png)
 
 
 ## Installation
-1. Upload the plugin files to the `/wp-content/plugins/goto-ai` directory.
+1. Upload the plugin files to the `/wp-content/plugins/jinx` directory.
 2. Activate the plugin through the 'Plugins' screen in WordPress.
-3. Go to **Settings > GoTo AI** to configure the plugin and rescan menus if needed.
+3. Go to **Settings > Jinx** to configure the plugin and rescan menus if needed.
 
 ## Usage
-- Click the **GoTo AI** button in the WordPress admin bar, or press **Cmd+K** (Mac) / **Ctrl+K** (Windows/Linux) anywhere in the admin.
+- Click the **Jinx** button in the WordPress admin bar, or press **Cmd+K** (Mac) / **Ctrl+K** (Windows/Linux) anywhere in the admin.
 - Start typing to search for admin screens. Use the arrow keys to navigate results and press Enter to go to a screen.
 - To update the menu list after installing/removing plugins, use the **Rescan Menus** button on the settings page.
 

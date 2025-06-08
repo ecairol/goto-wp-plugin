@@ -1,1 +1,1 @@
-// JavaScript for GoTo AI admin/settings page 
+// JavaScript for Jinx admin/settings page 

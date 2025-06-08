@@ -1,7 +1,7 @@
-# GoTo AI Plugin: Development Plan
+# Jinx Plugin: Development Plan
 
 ## Overview
-The GoTo AI plugin provides a powerful search modal for WordPress Admins, allowing them to quickly find and navigate to any admin screen by typing keywords or tasks. The search is powered by an LLM (OpenAI, Gemini, etc.) and intelligent keyword mapping, reducing the need to manually browse complex admin menus.
+The Jinx plugin provides a powerful search modal for WordPress Admins, allowing them to quickly find and navigate to any admin screen by typing keywords or tasks. The search is powered by an LLM (OpenAI, Gemini, etc.) and intelligent keyword mapping, reducing the need to manually browse complex admin menus.
 
 ---
 
@@ -61,8 +61,8 @@ The GoTo AI plugin provides a powerful search modal for WordPress Admins, allowi
 
 ### File Structure
 
-goto-ai/
-├── goto-ai.php                # Main plugin file
+jinx/
+├── jinx.php                # Main plugin file
 ├── readme.txt                 # WordPress plugin readme
 ├── plan.md                    # Project plan and notes
 ├── assets/
@@ -81,7 +81,7 @@ goto-ai/
 │   ├── modal.php              # Modal HTML template
 │   └── settings.php           # Settings page template
 └── languages/
-    └── goto-ai.pot            # Translation template
+    └── jinx.pot            # Translation template
 
 ---
 

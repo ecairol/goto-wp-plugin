@@ -1,2 +1,2 @@
 <?php
-// Template for GoTo AI settings page 
+// Template for Jinx settings page 

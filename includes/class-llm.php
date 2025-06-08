@@ -1,6 +1,6 @@
 <?php
 // Handles integration with LLM services (OpenAI, Gemini, etc.)
-class GoToAI_LLM {
+class Jinx_LLM {
 	/**
 	 * Search using LLM (OpenAI implementation)
 	 * @param string $query
@@ -8,8 +8,8 @@ class GoToAI_LLM {
 	 * @return array
 	 */
 	public static function search($query, $menu_list) {
-		$api_key = get_option('goto_ai_api_key');
-		$provider = get_option('goto_ai_llm_service', 'openai');
+		$api_key = get_option('jinx_llm_api_key');
+		$provider = get_option('jinx_llm_service', 'openai');
 
 		if (!$api_key || $provider !== 'openai') {
 			return [
