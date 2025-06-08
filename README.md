@@ -13,7 +13,8 @@ GoTo AI helps WordPress admins quickly find and navigate to any admin screen usi
 
 ## Screenshot
 
-![GoTo AI Modal Screenshot](assets/screenshot-1.png)
+![GoTo AI Modal Screenshot](assets/screenshots/screenshot-1.png)
+
 
 ## Installation
 1. Upload the plugin files to the `/wp-content/plugins/goto-ai` directory.
