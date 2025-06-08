@@ -1,4 +1,4 @@
-# Jinx
+# Jinx WP Plugin
 
 Jinx helps WordPress admins quickly find and navigate to any admin screen using an AI-powered search modal. No more clicking through endless menus—just search and go!
 
