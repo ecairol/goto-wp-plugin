@@ -30,9 +30,10 @@ class Jinx_LLM {
 		$prompt = "You are a WordPress admin assistant. Given this list of admin menu items:\n"
 			. $menu_str . "\n\n"
 			. "If a user types a query, return the most relevant menu item(s) and their URLs from the list as a JSON array of objects with 'title' and 'url'.\n"
-			. "- Consider synonyms, related concepts, and common typos.\n"
+			. "- Consider synonyms, related concepts, business/industry terms, and common typos.\n"
 			. "- If the query is in another language, return the best English menu item(s) that match the meaning.\n"
-			. "- If more than one menu item is relevant, return all of them.\n"
+			. "- Return all menu items that could plausibly match the query, including those that are synonyms, related business terms, or common in the industry.\n"
+			. "- If the query could refer to more than one menu item, return all plausible matches.\n"
 			. "- Only return menu items from the provided list.\n\n"
 			. "Example queries and expected results:\n"
 			. "- Query: 'person' → [{\"title\": \"Users\", ...}, {\"title\": \"Users > Add User\", ...}]\n"
@@ -87,7 +88,7 @@ class Jinx_LLM {
 				['role' => 'user', 'content' => $prompt],
 			],
 			'max_tokens' => 256,
-			'temperature' => 0.2,
+			'temperature' => 0.9,
 		]);
 
 		$ch = curl_init($endpoint);
