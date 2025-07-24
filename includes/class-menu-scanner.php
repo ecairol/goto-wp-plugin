@@ -1,6 +1,25 @@
 <?php
 // Handles scanning and mapping of WordPress admin menus
 class Jinx_Menu_Scanner {
+
+	/**
+	 * Cleans a menu title by removing update counts.
+	 * e.g. "Plugins 2" => "Plugins"
+	 *
+	 * @param string $title The original menu title with HTML.
+	 * @return string The cleaned title.
+	 */
+	private static function clean_menu_title( $title ) {
+		// First, get the raw text without any HTML.
+		$text_title = wp_strip_all_tags( $title );
+
+		// Remove trailing numbers (and surrounding space) which are typically update/notification counts.
+		// e.g. "Plugins 2" becomes "Plugins"
+		$cleaned_title = preg_replace( '/\s+\d+$/', '', $text_title );
+
+		return trim( $cleaned_title );
+	}
+
 	/**
 	* Scan all admin menus and submenus and store them in a WordPress option
 	*/
@@ -23,7 +42,7 @@ class Jinx_Menu_Scanner {
 				: admin_url('admin.php?page=' . $menu_slug);
 			}
 			$menus[$menu_slug] = array(
-				'title' => isset($item[0]) ? wp_strip_all_tags($item[0]) : '',
+				'title' => isset($item[0]) ? self::clean_menu_title($item[0]) : '',
 				'slug'  => $menu_slug,
 				'parent'=> null,
 				'url'   => $url,
@@ -39,7 +58,7 @@ class Jinx_Menu_Scanner {
 						: admin_url('admin.php?page=' . $sub_slug);
 					}
 					$menus[$menu_slug]['children'][] = array(
-						'title' => isset($subitem[0]) ? wp_strip_all_tags($subitem[0]) : '',
+						'title' => isset($subitem[0]) ? self::clean_menu_title($subitem[0]) : '',
 						'slug'  => $sub_slug,
 						'parent'=> $menu_slug,
 						'url'   => $sub_url,

@@ -71,3 +71,48 @@
 	font-size: 20px;
 	cursor: pointer;
 } 
+
+#jinx-llm-suggestions:empty {
+	display: none;
+}
+
+#jinx-llm-suggestions {
+	margin-top: 12px;
+    padding: 1rem;
+    font-size: 0.85rem;
+	border-radius: 6px;
+	background: linear-gradient(90deg, #d6c2ff, #ddcdfc, #d6c2ff);
+}
+#jinx-llm-suggestions.jinx-loading {
+	animation: jinx-thinking 3s ease infinite;
+	background: linear-gradient(90deg, #ddcdfc, #f0e9ff, #ddcdfc);
+	background-size: 200% 200%;
+}
+
+@keyframes jinx-thinking {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
+#jinx-llm-suggestions {
+	p {
+		margin: 0;
+	}
+	a {
+		color: #333;
+	}
+} 
+
+h3 {
+	font-size:13px;
+	color:#36135a;
+	margin-bottom:4px;
+	font-weight: 400;
+}

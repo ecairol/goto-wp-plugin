@@ -101,7 +101,8 @@
 	}
 
 	function showLLMLoading() {
-		$('#jinx-llm-suggestions').html('<div style="font-size:13px;color:#888;">AI Suggestions</div><div>Loading...</div>');
+        $('#jinx-llm-suggestions').addClass('jinx-loading');
+        $('#jinx-llm-suggestions').html('<h3>AI Suggestions</h3><div>Loading...</div>');
 	}
 
 	function fetchLLMSuggestions(query) {
@@ -115,9 +116,10 @@
 			}
 		})
 		.done(function(data) {
+            $('#jinx-llm-suggestions').removeClass('jinx-loading');
 			if (query !== lastQuery) return; // Only show if still relevant
 			if (data.llm && data.llm.length > 0) {
-				let html = '<div style="font-size:13px;color:#888;margin-bottom:4px;">AI Suggestions</div>';
+				let html = '<h3>AI Suggestions</h3>';
 				data.llm.forEach(function(item) {
 					html += `<div class="jinx-llm-suggestion"><a href="${item.url || '#'}">${item.title}</a></div>`;
 				});
