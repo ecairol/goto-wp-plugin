@@ -14,5 +14,5 @@ Jinx helps WordPress admins quickly find and navigate to any admin screen using 
 2. Activate the plugin through the 'Plugins' screen in WordPress.
 
 == Changelog ==
-= 0.1.0 =
+= 0.1.1 =
 * Initial release. 

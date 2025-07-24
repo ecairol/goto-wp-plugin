@@ -50,12 +50,28 @@ class Jinx_Menu_Scanner {
 		update_option('jinx_admin_menus', $menus);
 	}
 	
+	public static function mark_for_rescan() {
+		// Set an option that tells us to rescan menus on the next admin request.
+		update_option( 'jinx_admin_menu_rescan_pending', true );
+	}
+
+	/**
+	 * If a rescan has been marked as pending, run it now (late in admin_menu)
+	 */
+	public static function maybe_rescan() {
+		if ( get_option( 'jinx_admin_menu_rescan_pending' ) ) {
+			self::scan_and_store_menus();
+			delete_option( 'jinx_admin_menu_rescan_pending' );
+		}
+	}
+	
 	/**
 	* Hook to scan menus when a plugin is activated or deactivated
 	*/
 	public static function hook_plugin_changes() {
-		add_action('activated_plugin', array(__CLASS__, 'scan_and_store_menus'));
-		add_action('deactivated_plugin', array(__CLASS__, 'scan_and_store_menus'));
+		// Instead of rescanning immediately (menus are not yet updated), mark a rescan
+		add_action( 'activated_plugin', array( __CLASS__, 'mark_for_rescan' ) );
+		add_action( 'deactivated_plugin', array( __CLASS__, 'mark_for_rescan' ) );
 	}
 }
 
@@ -63,5 +79,8 @@ class Jinx_Menu_Scanner {
 register_activation_hook(__FILE__, array('Jinx_Menu_Scanner', 'scan_and_store_menus'));
 // Hook to plugin changes
 Jinx_Menu_Scanner::hook_plugin_changes();
+
+// After all other plugins have registered their admin menus, check if a rescan is required.
+add_action( 'admin_menu', array( 'Jinx_Menu_Scanner', 'maybe_rescan' ), 9999 );
 
 // TODO: Implement menu scanning logic
