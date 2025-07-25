@@ -47,7 +47,6 @@
 	}
 
 	function fetchMenus() {
-		results.html('<li>Loading...</li>');
 		$.ajax({
 			url: Jinx.apiUrl,
 			method: 'GET',
@@ -80,6 +79,15 @@
 
 	function showResults(query) {
 		results.empty();
+		$('#jinx-llm-suggestions').empty();
+		if (llmTimeout) clearTimeout(llmTimeout);
+
+		// Don't show any results if the query is empty.
+		if (query.trim() === '') {
+			selectedIndex = -1;
+			return;
+		}
+
 		let filtered = menuData.filter(item => item.title.toLowerCase().includes(query.toLowerCase()));
 		if (filtered.length === 0) {
 			results.html('<li>No results found</li>');
@@ -90,10 +98,8 @@
 				results.append(`<li class="${selectedClass}" data-url="${item.url}"><a href="#" tabindex="-1">${item.title}</a></li>`);
 			});
 		}
-		// LLM suggestions: clear and set up delayed fetch
-		$('#jinx-llm-suggestions').empty();
-		if (llmTimeout) clearTimeout(llmTimeout);
-		if (query.trim().length > 0) {
+		// LLM suggestions: only fetch for queries of 3+ chars
+		if (query.trim().length >= 3) {
 			lastQuery = query;
 			llmTimeout = setTimeout(function() {
 				showLLMLoading();

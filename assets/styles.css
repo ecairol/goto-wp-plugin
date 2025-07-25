@@ -37,7 +37,7 @@
 	list-style: none;
 	padding: 0;
 	margin: 0;
-	max-height: 300px;
+	max-height: 184px;
 	overflow: auto;
 }
 
@@ -54,12 +54,27 @@
 }
 
 .jinx-selected {
-	background: #4F8EF7;
+	background: #695d77;
 	color: #fff;
 	border-radius: 4px;
 }
 .jinx-selected a {
 	color: #fff;
+}
+
+#jinx-llm-suggestions {
+	.jinx-llm-suggestion {
+		padding: 0.25rem;
+	}
+
+	.jinx-selected {
+		background: #695d77;
+		color: #fff;
+		border-radius: 4px;
+	}
+	.jinx-selected a {
+		color: #fff;
+	}
 }
 
 .jinx-llm-suggestion.jinx-selected {
