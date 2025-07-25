@@ -62,6 +62,12 @@
 	color: #fff;
 }
 
+.jinx-llm-suggestion.jinx-selected {
+	background: #4F8EF7;
+	color: #fff;
+	border-radius: 4px;
+}
+
 .jinx-modal-close {
 	position: absolute;
 	top: 8px;
@@ -81,11 +87,12 @@
     padding: 1rem;
     font-size: 0.85rem;
 	border-radius: 6px;
-	background: linear-gradient(90deg, #d6c2ff, #ddcdfc, #d6c2ff);
+	background: linear-gradient(90deg, #edeaf4, #ede6fa, #edeaf4);
+
 }
 #jinx-llm-suggestions.jinx-loading {
 	animation: jinx-thinking 3s ease infinite;
-	background: linear-gradient(90deg, #ddcdfc, #f0e9ff, #ddcdfc);
+	background: linear-gradient(90deg, #ddcdfc, #e9dffc, #ddcdfc);
 	background-size: 200% 200%;
 }
 
@@ -101,10 +108,11 @@
 	}
 }
 
+#jinx-llm-suggestions p {
+	margin: 0;
+}
+
 #jinx-llm-suggestions {
-	p {
-		margin: 0;
-	}
 	a {
 		color: #333;
 	}
@@ -112,7 +120,13 @@
 
 h3 {
 	font-size:13px;
-	color:#36135a;
+	color:#888;
+	margin-top: 12px;
 	margin-bottom:4px;
 	font-weight: 400;
+}
+
+.jinx-modal-scroll-container {
+	max-height: 300px;
+	overflow-y: auto;
 }

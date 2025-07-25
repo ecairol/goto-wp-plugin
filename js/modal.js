@@ -13,8 +13,10 @@
 			<div class="jinx-modal-overlay" style="display:none;"></div>
 			<div class="jinx-modal" style="display:none;">
 				<input class="jinx-modal-input" type="text" placeholder="Jinx it!" autocomplete="off" />
-				<ul id="jinx-modal-results"></ul>
-				<div id="jinx-llm-suggestions" style="margin-top:12px;"></div>
+				<div class="jinx-modal-scroll-container">
+					<ul id="jinx-modal-results"></ul>
+					<div id="jinx-llm-suggestions"></div>
+				</div>
 			</div>
 		`);
 		modal = $('.jinx-modal');
@@ -102,7 +104,7 @@
 
 	function showLLMLoading() {
         $('#jinx-llm-suggestions').addClass('jinx-loading');
-        $('#jinx-llm-suggestions').html('<h3>AI Suggestions</h3><div>Loading...</div>');
+        $('#jinx-llm-suggestions').html('<h3>AI Suggestions</h3><div class="jinx-llm-suggestion">Loading...</div>');
 	}
 
 	function fetchLLMSuggestions(query) {
@@ -127,19 +129,24 @@
 			} else {
 				$('#jinx-llm-suggestions').empty();
 			}
+			// After LLM results are in, reset selection index as the list has changed
+			selectedIndex = -1;
 		});
 	}
 
 	function scrollToSelected() {
-		const sel = results.find('.jinx-selected');
-		if (sel.length) {
-			const container = results[0];
-			const el = sel[0];
-			const elTop = el.offsetTop;
-			const elBottom = elTop + el.offsetHeight;
-			if (elTop < container.scrollTop) {
+		const container = $('.jinx-modal-scroll-container')[0];
+		const sel = $('.jinx-selected', container)[0];
+
+		if (sel) {
+			const containerTop = container.scrollTop;
+			const containerBottom = containerTop + container.clientHeight;
+			const elTop = sel.offsetTop;
+			const elBottom = elTop + sel.offsetHeight;
+
+			if (elTop < containerTop) {
 				container.scrollTop = elTop;
-			} else if (elBottom > container.scrollTop + container.clientHeight) {
+			} else if (elBottom > containerBottom) {
 				container.scrollTop = elBottom - container.clientHeight;
 			}
 		}
@@ -188,38 +195,37 @@
 			return; // Exit early
 		}
 
-		let $input = $(this);
-		let query = $input.val();
-		let filtered = menuData.filter(item => item.title.toLowerCase().includes(query.toLowerCase()));
-
-		// The rest of the navigation depends on having results.
-		if (filtered.length === 0) return;
+		const $navigableItems = $('#jinx-modal-results li, #jinx-llm-suggestions .jinx-llm-suggestion');
+		if ($navigableItems.length === 0) return;
 
 		if (e.key === 'ArrowDown') {
 			e.preventDefault();
-			selectedIndex = (selectedIndex + 1) % filtered.length;
-			// Only update selection, do not trigger new search or LLM
-			results.children().removeClass('jinx-selected');
-			results.children().eq(selectedIndex).addClass('jinx-selected');
-			scrollToSelected();
+			selectedIndex = (selectedIndex + 1) % $navigableItems.length;
 		} else if (e.key === 'ArrowUp') {
 			e.preventDefault();
-			selectedIndex = (selectedIndex - 1 + filtered.length) % filtered.length;
-			results.children().removeClass('jinx-selected');
-			results.children().eq(selectedIndex).addClass('jinx-selected');
-			scrollToSelected();
+			selectedIndex = (selectedIndex - 1 + $navigableItems.length) % $navigableItems.length;
 		} else if (e.key === 'Enter') {
 			e.preventDefault();
-			if (selectedIndex >= 0 && filtered[selectedIndex]) {
-				const url = filtered[selectedIndex].url;
-				// Cmd/Ctrl+Enter to open in a new tab
-				if (e.metaKey || e.ctrlKey) {
-					window.open(url, '_blank');
-				} else {
-					window.location.href = url;
+			const $selectedItem = $navigableItems.eq(selectedIndex);
+			if ($selectedItem.length) {
+				const url = $selectedItem.is('li') ? $selectedItem.data('url') : $selectedItem.find('a').attr('href');
+				if (url) {
+					if (e.metaKey || e.ctrlKey) {
+						window.open(url, '_blank');
+					} else {
+						window.location.href = url;
+					}
 				}
 			}
+			return; // Prevent further action on Enter
+		} else {
+			return; // Not a navigation key
 		}
+
+		// Update selection for both ArrowUp and ArrowDown
+		$navigableItems.removeClass('jinx-selected');
+		$navigableItems.eq(selectedIndex).addClass('jinx-selected');
+		scrollToSelected();
 	});
 
 })(jQuery); 
