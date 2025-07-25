@@ -12,7 +12,7 @@
 		$('body').append(`
 			<div class="jinx-modal-overlay" style="display:none;"></div>
 			<div class="jinx-modal" style="display:none;">
-				<input class="jinx-modal-input" type="text" placeholder="Search Admin screens..." autocomplete="off" />
+				<input class="jinx-modal-input" type="text" placeholder="Jinx it!" autocomplete="off" />
 				<ul id="jinx-modal-results"></ul>
 				<div id="jinx-llm-suggestions" style="margin-top:12px;"></div>
 			</div>
@@ -149,7 +149,14 @@
 	$(document).on('click', '#jinx-modal-results li', function(e) {
 		e.preventDefault();
 		const url = $(this).data('url');
-		if (url) window.location.href = url;
+		if (url) {
+			// Cmd/Ctrl+Click to open in a new tab
+			if (e.metaKey || e.ctrlKey) {
+				window.open(url, '_blank');
+			} else {
+				window.location.href = url;
+			}
+		}
 	});
 
 	// Open modal on admin bar button click
@@ -175,10 +182,19 @@
 
 	// Keyboard navigation for modal input
 	$(document).on('keydown', '.jinx-modal-input', function(e) {
+		// Handle Escape key globally for the modal, regardless of search results.
+		if (e.key === 'Escape') {
+			closeModal();
+			return; // Exit early
+		}
+
 		let $input = $(this);
 		let query = $input.val();
 		let filtered = menuData.filter(item => item.title.toLowerCase().includes(query.toLowerCase()));
+
+		// The rest of the navigation depends on having results.
 		if (filtered.length === 0) return;
+
 		if (e.key === 'ArrowDown') {
 			e.preventDefault();
 			selectedIndex = (selectedIndex + 1) % filtered.length;
@@ -193,11 +209,16 @@
 			results.children().eq(selectedIndex).addClass('jinx-selected');
 			scrollToSelected();
 		} else if (e.key === 'Enter') {
+			e.preventDefault();
 			if (selectedIndex >= 0 && filtered[selectedIndex]) {
-				window.location.href = filtered[selectedIndex].url;
+				const url = filtered[selectedIndex].url;
+				// Cmd/Ctrl+Enter to open in a new tab
+				if (e.metaKey || e.ctrlKey) {
+					window.open(url, '_blank');
+				} else {
+					window.location.href = url;
+				}
 			}
-		} else if (e.key === 'Escape') {
-			closeModal();
 		}
 	});
 

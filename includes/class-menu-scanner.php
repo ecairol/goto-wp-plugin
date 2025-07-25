@@ -14,8 +14,8 @@ class Jinx_Menu_Scanner {
 		$text_title = wp_strip_all_tags( $title );
 
 		// Remove trailing numbers (and surrounding space) which are typically update/notification counts.
-		// e.g. "Plugins 2" becomes "Plugins"
-		$cleaned_title = preg_replace( '/\s+\d+$/', '', $text_title );
+		// e.g. "Plugins 2" or "Comments1" becomes "Plugins" or "Comments"
+		$cleaned_title = preg_replace( '/\s*\d+$/', '', $text_title );
 
 		return trim( $cleaned_title );
 	}
