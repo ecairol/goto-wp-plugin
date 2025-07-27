@@ -15,9 +15,13 @@ Jinx helps WordPress admins quickly find and navigate to any admin screen using 
 
 ![Jinx Modal Screenshot](assets/screenshots/screenshot-1.png)
 
-Jinx will try to find the most probable screen you're looking for:
+#### Hit `Enter` to go directly to the screen you're looking for
 ![Jinx Modal Screenshot](assets/screenshots/screenshot-2.png)
 
+#### Jinx will try to find what you mean:
+![Jinx Modal Screenshot](assets/screenshots/screenshot-3.png)
+
+#### `CMD` + `J`, that's all!
 
 ## Installation
 1. Upload the plugin files to the `/wp-content/plugins/jinx` directory.
