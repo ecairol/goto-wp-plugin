@@ -26,23 +26,38 @@ class Jinx_LLM {
 		$menu_lines = array_map(function($item) {
 			return '- ' . $item['title'] . ($item['url'] ? ' (' . $item['url'] . ')' : '');
 		}, $menu_list);
-		$menu_str = implode("\n", $menu_lines);
-		$prompt = "You are a WordPress admin assistant. Given this list of admin menu items:\n"
-			. $menu_str . "\n\n"
-			. "If a user types a query, return the most relevant menu item(s) and their URLs from the list as a JSON array of objects with 'title' and 'url'.\n"
-			. "- Consider synonyms, related concepts, business/industry terms, and common typos.\n"
-			. "- If the query is in another language, return the best English menu item(s) that match the meaning.\n"
-			. "- Return all menu items that could plausibly match the query, including those that are synonyms, related business terms, or common in the industry.\n"
-			. "- If the query could refer to more than one menu item, return all plausible matches.\n"
-			. "- Only return menu items from the provided list.\n\n"
-			. "Example queries and expected results:\n"
-			. "- Query: 'person' → [{\"title\": \"Users\", ...}, {\"title\": \"Users > Add User\", ...}]\n"
-			. "- Query: 'usuario' → [{\"title\": \"Users\", ...}]\n"
-			. "- Query: 'Store' → [{\"title\": \"WooCommerce > Orders\", ...}, {\"title\": \"WooCommerce > Products\", ...}]\n"
-			. "- Query: 'tool' → [{\"title\": \"Tools\", ...}, {\"title\": \"Settings\", ...}]\n"
-			. "- Query: 'Pulgins' → [{\"title\": \"Plugins\", ...}]\n"
-			. "- Query: 'Photos' → [{\"title\": \"Media\", ...}, {\"title\": \"Media > Library\", ...}]\n\n"
-			. "User query: '" . $query . "'";
+
+		$json_menu_list = json_encode($menu_list);
+
+		$prompt = "**ROLE & CONTEXT:**\n"
+			. "You are Jinx, a specialized AI assistant for the WordPress admin. Your task is to act as a smart search filter for a list of admin menu pages. You must be fast, accurate, and concise.\n\n"
+			. "**MASTER INSTRUCTION:**\n"
+			. "You will be given a JSON array of objects named 'AVAILABLE_MENU_ITEMS'. Each object has a 'title' and a 'url'.\n"
+			. "Based on the 'USER_QUERY', you must return a new, filtered JSON array containing only the objects from the original list that are relevant to the query. The structure of the returned objects must be identical to the input.\n\n"
+			. "AVAILABLE_MENU_ITEMS:\n"
+			. $json_menu_list . "\n\n"
+			. "**CRITICAL RULES FOR FILTERING:**\n"
+			. "1.  **Strict Adherence to List:** This is the most important rule. You MUST ONLY return items from the 'AVAILABLE MENU ITEMS' list. Do NOT invent, hallucinate, or suggest items that are not in the list, even if they seem plausible.\n"
+			. "2.  **Broad Conceptual Matching:** Go beyond literal words to understand the user's *intent*. Match based on:\n"
+			. "    - **Abstract Concepts:** Deconstruct high-level ideas. For 'money', think about what represents money in this system: sales, orders, payment gateways, reports, etc.\n"
+			. "    - **Intent-to-Tool Mapping:** When users describe what they want to DO, find the WordPress tools/sections that enable that action. 'send an email' → email campaigns, subscribers; 'backup site' → export/backup tools; 'customize look' → themes, customizer.\n"
+			. "    - **Synonyms & Categories:** ('photos', 'images') -> 'Media'\n"
+			. "    - **User Roles & Groups:** ('people', 'clients') -> 'Users', 'Customers', 'Contacts'\n"
+			. "    - **Business Functions:** ('sales', 'revenue') -> 'WooCommerce > Orders', 'WooCommerce > Reports'\n"
+			. "    - **Typos, and different languages:** ('pulgins', 'usuario') -> 'Plugins', 'Users'\n"
+			. "3.  **Be Thorough:** If a query could plausibly refer to multiple items, include all of them in the returned array.\n"
+			. "4.  **Output Format:** Your response MUST be a valid JSON array and nothing else. No introductory text, no explanations, no apologies. If no items match, return an empty array `[]`.\n\n"
+			. "**EXAMPLES:**\n"
+			. "- Query: 'send an email' -> [{\"title\": \"Email Campaigns\", \"url\": \"...\"}, {\"title\": \"Subscribers\", \"url\": \"...\"}, {\"title\": \"Email Settings\", \"url\": \"...\"}]\n"
+			. "- Query: 'money' -> [{\"title\": \"WooCommerce > Orders\", \"url\": \"...\"}, {\"title\": \"WooCommerce > Reports\", \"url\": \"...\"}, {\"title\": \"PayPal Settings\", \"url\": \"...\"}]\n"
+			. "- Query: 'people' -> [{\"title\": \"Users\", ...}, {\"title\": \"WooCommerce > Customers\", ...}]\n"
+			. "- Query: 'write a new article' -> [{\"title\": \"Posts > Add New\", ...}]\n"
+			. "- Query: 'pulgins' -> [{\"title\": \"Plugins\", ...}]\n"
+			. "- Query: 'campaña' -> [{\"title\": \"Campaigns\", ...}]\n"
+			. "- Query: 'a non-existent page'\n"
+			. "- Based on the list, you would return: []\n\n"
+			. "---\n"
+			. "USER_QUERY: '" . $query . "'";
 
 		// Call OpenAI API
 		$response = self::call_openai($api_key, $prompt);
@@ -75,35 +90,37 @@ class Jinx_LLM {
 		return $matches;
 	}
 
+
 	private static function call_openai($api_key, $prompt) {
-		$endpoint = 'https://api.openai.com/v1/chat/completions';
-		$headers = [
-			'Content-Type: application/json',
-			'Authorization: Bearer ' . $api_key,
-		];
-		$body = json_encode([
-			'model' => 'gpt-3.5-turbo',
-			'messages' => [
-				['role' => 'system', 'content' => 'You are a helpful assistant.'],
-				['role' => 'user', 'content' => $prompt],
-			],
-			'max_tokens' => 256,
-			'temperature' => 0.9,
-		]);
+		$response = wp_remote_post('https://api.openai.com/v1/chat/completions', array(
+			'headers' => array(
+				'Content-Type' => 'application/json',
+				'Authorization' => 'Bearer ' . $api_key,
+			),
+			'body' => json_encode(array(
+				'model' => 'gpt-4o-mini',
+				'messages' => array(
+					array('role' => 'system', 'content' => 'You are a helpful assistant.'),
+					array('role' => 'user', 'content' => $prompt),
+				),
+				'max_tokens' => 1024,
+				'temperature' => 0.5,
+			)),
+			'timeout' => 15,
+		));
 
-		$ch = curl_init($endpoint);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_POST, true);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 15);
-		$result = curl_exec($ch);
-		curl_close($ch);
+		if (is_wp_error($response)) {
+			return false;
+		}
 
-		if (!$result) return false;
-		$data = json_decode($result, true);
-		if (!isset($data['choices'][0]['message']['content'])) return false;
-		return $data['choices'][0]['message']['content'];
+		$body = wp_remote_retrieve_body($response);
+		$data = json_decode($body, true);
+
+		if (isset($data['choices'][0]['message']['content'])) {
+			return $data['choices'][0]['message']['content'];
+		}
+
+		return false;
 	}
 
 	// Future: add Gemini and other providers here
