@@ -8,20 +8,6 @@ class Jinx_LLM {
 	 * @return array
 	 */
 	public static function search($query, $menu_list) {
-		$api_key = get_option('jinx_llm_api_key');
-		$provider = get_option('jinx_llm_service', 'openai');
-
-		if (!$api_key || $provider !== 'openai') {
-			return [
-				[
-					'title' => 'LLM not configured or not OpenAI',
-					'url' => '',
-					'slug' => '',
-					'parent' => '',
-				]
-			];
-		}
-
 		// Build prompt with instructions and examples
 		$menu_lines = array_map(function($item) {
 			return '- ' . $item['title'] . ($item['url'] ? ' (' . $item['url'] . ')' : '');
@@ -60,11 +46,12 @@ class Jinx_LLM {
 			. "USER_QUERY: '" . $query . "'";
 
 		// Call OpenAI API
-		$response = self::call_openai($api_key, $prompt);
-		if (!$response) {
+		$response = self::call_llm( $prompt );
+
+		if ( isset( $response['error'] ) ) {
 			return [
 				[
-					'title' => 'OpenAI API error',
+					'title' => $response['error'] . ' ' . $response['message'],
 					'url' => '',
 					'slug' => '',
 					'parent' => '',
@@ -90,6 +77,38 @@ class Jinx_LLM {
 		return $matches;
 	}
 
+
+	private static function call_llm( $prompt ) {
+		$api_key  = get_option('jinx_llm_api_key');
+		$provider = get_option('jinx_llm_service', 'openai');
+
+		if ( ! $api_key || ! $provider ) {
+			return [
+				'error' => 'LLM not configured properly. Check your API key.',
+				'message' => ''
+			];
+		}
+		
+		if ( $provider === 'openai' ) {
+			$response = self::call_openai( $api_key, $prompt );
+		} elseif ( $provider === 'gemini' ) {
+			$response = self::call_gemini( $api_key, $prompt );
+		} else {
+			return [
+				'error' => 'Unsupported LLM provider: ' . $provider,
+				'message' => ''
+			];
+		}
+		
+		if ( ! $response || is_wp_error($response) ) {
+			return [
+				'error' => 'API error with service ' . $provider,
+				'message' => is_wp_error($response) ? $response->get_error_message() : 'Unknown error'
+			];
+		}
+
+		return $response;
+	}
 
 	private static function call_openai($api_key, $prompt) {
 		$response = wp_remote_post('https://api.openai.com/v1/chat/completions', array(
@@ -123,5 +142,40 @@ class Jinx_LLM {
 		return false;
 	}
 
-	// Future: add Gemini and other providers here
+	private static function call_gemini($api_key, $prompt) {
+		$response = wp_remote_post('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' . $api_key, array(
+			'headers' => array(
+				'Content-Type' => 'application/json',
+			),
+			'body' => json_encode(array(
+				'contents' => array(
+					array(
+						'parts' => array(
+							array('text' => $prompt)
+						)
+					)
+				),
+				'generationConfig' => array(
+					'temperature' => 0.5,
+					'maxOutputTokens' => 1024,
+				)
+			)),
+			'timeout' => 15,
+		));
+
+		if (is_wp_error($response)) {
+			return false;
+		}
+
+		$body = wp_remote_retrieve_body($response);
+		$data = json_decode($body, true);
+
+		if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
+			return $data['candidates'][0]['content']['parts'][0]['text'];
+		}
+
+		return false;
+	}
+
+	// Future: add other providers here
 } 
