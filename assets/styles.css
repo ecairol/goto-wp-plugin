@@ -16,8 +16,8 @@
 	top: 10vh;
 	left: 50%;
 	transform: translateX(-50%);
-	width: 400px;
-	max-width: 86vw;
+	width: 80%;
+	max-width: 600px;
 	background: #fff;
 	border-radius: 8px;
 	box-shadow: 0 8px 32px rgba(0,0,0,0.2);
@@ -37,7 +37,6 @@
 	list-style: none;
 	padding: 0;
 	margin: 0;
-	max-height: 184px;
 	overflow: auto;
 }
 
@@ -53,7 +52,8 @@
 	padding: 0.2rem;
 }
 
-.jinx-selected {
+li.jinx-selected,
+li:hover {
 	background: #695d77;
 	color: #fff;
 	border-radius: 4px;
@@ -64,23 +64,19 @@
 
 #jinx-llm-suggestions {
 	.jinx-llm-suggestion {
+		border-radius: 4px;
 		padding: 0.25rem;
 	}
 
-	.jinx-selected {
+	.jinx-selected,
+	.jinx-llm-suggestion:hover {
 		background: #695d77;
 		color: #fff;
 		border-radius: 4px;
+		a {
+			color: #fff;
+		}
 	}
-	.jinx-selected a {
-		color: #fff;
-	}
-}
-
-.jinx-llm-suggestion.jinx-selected {
-	background: #4F8EF7;
-	color: #fff;
-	border-radius: 4px;
 }
 
 .jinx-modal-close {
@@ -142,6 +138,9 @@ h3 {
 }
 
 .jinx-modal-scroll-container {
-	max-height: 300px;
+	max-height: 400px;
 	overflow-y: auto;
+    display: grid;
+    grid-template-columns: 5fr 3fr;
+    gap: 1rem;
 }
