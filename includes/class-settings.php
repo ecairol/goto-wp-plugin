@@ -43,6 +43,14 @@ class Jinx_Settings {
 		);
 
 		add_settings_field(
+			'jinx_llm_service',
+			'LLM Service',
+			array($this, 'llm_service_field_callback'),
+			'jinx-settings',
+			'jinx_main_section'
+		);
+
+		add_settings_field(
 			'jinx_llm_api_key',
 			'LLM API Key',
 			array($this, 'api_key_field_callback'),
@@ -51,9 +59,9 @@ class Jinx_Settings {
 		);
 
 		add_settings_field(
-			'jinx_llm_service',
-			'LLM Service',
-			array($this, 'llm_service_field_callback'),
+			'jinx_use_embeddings',
+			'Use Embeddings Search',
+			array($this, 'use_embeddings_field_callback'),
 			'jinx-settings',
 			'jinx_main_section'
 		);
@@ -70,14 +78,6 @@ class Jinx_Settings {
 			'jinx_pinecone_server_url',
 			'Pinecone Server URL',
 			array($this, 'pinecone_server_url_field_callback'),
-			'jinx-settings',
-			'jinx_main_section'
-		);
-
-		add_settings_field(
-			'jinx_use_embeddings',
-			'Use Embeddings Search',
-			array($this, 'use_embeddings_field_callback'),
 			'jinx-settings',
 			'jinx_main_section'
 		);
@@ -156,7 +156,7 @@ class Jinx_Settings {
 	// API Key field callback
 	public function api_key_field_callback() {
 		$api_key = esc_attr(get_option('jinx_llm_api_key'));
-		echo "<input type='text' name='jinx_llm_api_key' value='$api_key' class='regular-text' />";
+		echo "<input type='password' name='jinx_llm_api_key' value='$api_key' class='regular-text' />";
 	}
 
 	// LLM Service selector callback
@@ -164,6 +164,7 @@ class Jinx_Settings {
 		$selected = esc_attr(get_option('jinx_llm_service', 'openai'));
 		?>
 		<select name="jinx_llm_service">
+			<option value="none" <?php selected($selected, 'none'); ?>>None</option>
 			<option value="openai" <?php selected($selected, 'openai'); ?>>OpenAI</option>
 			<option value="gemini" <?php selected($selected, 'gemini'); ?>>Gemini</option>
 		</select>
@@ -173,7 +174,7 @@ class Jinx_Settings {
 	// Pinecone API Key field callback
 	public function pinecone_api_key_field_callback() {
 		$api_key = esc_attr(get_option('jinx_pinecone_api_key'));
-		echo "<input type='text' name='jinx_pinecone_api_key' value='$api_key' class='regular-text' placeholder='Your Pinecone API Key' />";
+		echo "<input type='password' name='jinx_pinecone_api_key' value='$api_key' class='regular-text' placeholder='Your Pinecone API Key' />";
 		echo "<p class='description'>Optional: Used for vector search functionality</p>";
 	}
 
@@ -190,7 +191,7 @@ class Jinx_Settings {
 		$checked = $use_embeddings ? 'checked="checked"' : '';
 		echo "<label class='description'>";
 		echo "<input type='checkbox' name='jinx_use_embeddings' value='1' $checked />";
-		echo "Use semantic search with Pinecone embeddings instead of LLM text processing. Requires Pinecone configuration above.</p>";
+		echo "Use semantic search with Pinecone embeddings. Requires both Pinecone and LLM service configuration above.</p>";
 	}
 }
 

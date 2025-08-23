@@ -99,19 +99,23 @@
 				results.append(`<li class="${selectedClass}" data-url="${item.url}"><a href="#" tabindex="-1">${item.title}</a></li>`);
 			});
 		}
-		// LLM suggestions: only fetch for queries of 3+ chars
+		// LLM suggestions: only fetch for queries of 3+ characters
 		if (query.trim().length >= 3) {
 			lastQuery = query;
-			llmTimeout = setTimeout(function() {
-				showLLMLoading();
-				fetchLLMSuggestions(query);
-			}, 400);
+			
+			// Only fetch LLM suggestions if LLM service is configured
+			if (Jinx.llmService && Jinx.llmService !== '' && Jinx.llmService !== 'none') {
+				llmTimeout = setTimeout(function() {
+					showLLMLoading();
+					fetchLLMSuggestions(query);
+				}, 400);
+			}
 		}
 	}
 
 	function showLLMLoading() {
         $('#jinx-llm-suggestions').addClass('jinx-loading');
-        $('#jinx-llm-suggestions').html('<h3>AI Suggestions</h3><div class="jinx-llm-suggestion">Loading...</div>');
+        $('#jinx-llm-suggestions').html('<h3>Jinx AI Suggestions</h3><div class="jinx-llm-suggestion">Loading...</div>');
 	}
 
 	function fetchLLMSuggestions(query) {

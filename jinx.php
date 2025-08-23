@@ -31,6 +31,7 @@ add_action('admin_enqueue_scripts', function() {
 	wp_localize_script('jinx-modal', 'Jinx', array(
 		'apiUrl' => rest_url('jinx/v1/menus'),
 		'nonce'  => wp_create_nonce('wp_rest'),
+		'llmService' => get_option('jinx_llm_service', ''),
 	));
 });
 
