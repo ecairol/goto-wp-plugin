@@ -132,23 +132,29 @@ class Jinx_Settings {
 			</form>
 
 			<hr>
-			<h2>Scanned Admin Menus (Debug)</h2>
+			<h2>Source Menu Data</h2>
+			<p>This is the data that Jinx uses to search for admin screens. It is stored in the database and can be rescanned at any time. It is also auto-generated when a plugin is activated or deactivated.</p>
 
-			<h3>CSV</h3>
-			<pre style="max-height:400px;overflow:auto;background:#f7f7f7;padding:10px;border:1px solid #ccc;">
-			<?php
-			$csv_data = get_option('jinx_admin_menus_csv');
-			echo $csv_data;
-			?>
-			</pre>
+			<details>
+				<summary><strong>Raw Menu Data</strong></summary>
+				<pre style="max-height:400px;overflow:auto;background:#f7f7f7;padding:10px;border:1px solid #ccc;">
+				<?php
+				$menus = get_option('jinx_admin_menus');
+				print_r($menus);
+				?>
+				</pre>
+			</details>
 
-			<h3>Raw</h3>
-			<pre style="max-height:400px;overflow:auto;background:#f7f7f7;padding:10px;border:1px solid #ccc;">
-			<?php
-			$menus = get_option('jinx_admin_menus');
-			print_r($menus);
-			?>
-			</pre>
+			<details>
+				<summary><strong>Menus as CSV</strong></summary>
+				<pre style="max-height:400px;overflow:auto;background:#f7f7f7;padding:10px;border:1px solid #ccc;">
+					<?php
+					$csv_data = get_option('jinx_admin_menus_csv');
+					echo $csv_data;
+					?>
+				</pre>
+			</details>
+			
 		</div>
 		<?php
 	}
