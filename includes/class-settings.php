@@ -31,6 +31,9 @@ class Jinx_Settings {
 	public function register_settings() {
 		register_setting('jinx_settings_group', 'jinx_llm_api_key');
 		register_setting('jinx_settings_group', 'jinx_llm_service');
+		register_setting('jinx_settings_group', 'jinx_pinecone_api_key');
+		register_setting('jinx_settings_group', 'jinx_pinecone_server_url');
+		register_setting('jinx_settings_group', 'jinx_use_embeddings');
 
 		add_settings_section(
 			'jinx_main_section',
@@ -54,6 +57,30 @@ class Jinx_Settings {
 			'jinx-settings',
 			'jinx_main_section'
 		);
+
+		add_settings_field(
+			'jinx_pinecone_api_key',
+			'Pinecone API Key',
+			array($this, 'pinecone_api_key_field_callback'),
+			'jinx-settings',
+			'jinx_main_section'
+		);
+
+		add_settings_field(
+			'jinx_pinecone_server_url',
+			'Pinecone Server URL',
+			array($this, 'pinecone_server_url_field_callback'),
+			'jinx-settings',
+			'jinx_main_section'
+		);
+
+		add_settings_field(
+			'jinx_use_embeddings',
+			'Use Embeddings Search',
+			array($this, 'use_embeddings_field_callback'),
+			'jinx-settings',
+			'jinx_main_section'
+		);
 	}
 
 	// Handle manual rescan button
@@ -64,8 +91,18 @@ class Jinx_Settings {
 			check_admin_referer('jinx_settings_group-options')
 		) {
 			Jinx_Menu_Scanner::scan_and_store_menus();
-			add_action('admin_notices', function() {
-				echo '<div class="notice notice-success is-dismissible"><p>Admin menus have been rescanned and updated.</p></div>';
+			
+			// Check if Pinecone is configured to provide appropriate feedback
+			$pinecone_api_key = get_option('jinx_pinecone_api_key');
+			$pinecone_server_url = get_option('jinx_pinecone_server_url');
+			$pinecone_configured = !empty($pinecone_api_key) && !empty($pinecone_server_url);
+			
+			add_action('admin_notices', function() use ($pinecone_configured) {
+				$message = 'Admin menus have been rescanned and updated.';
+				if ($pinecone_configured) {
+					$message .= ' Menu embeddings have been processed and sent to Pinecone.';
+				}
+				echo '<div class="notice notice-success is-dismissible"><p>' . $message . '</p></div>';
 			});
 		}
 	}
@@ -131,6 +168,29 @@ class Jinx_Settings {
 			<option value="gemini" <?php selected($selected, 'gemini'); ?>>Gemini</option>
 		</select>
 		<?php
+	}
+
+	// Pinecone API Key field callback
+	public function pinecone_api_key_field_callback() {
+		$api_key = esc_attr(get_option('jinx_pinecone_api_key'));
+		echo "<input type='text' name='jinx_pinecone_api_key' value='$api_key' class='regular-text' placeholder='Your Pinecone API Key' />";
+		echo "<p class='description'>Optional: Used for vector search functionality</p>";
+	}
+
+	// Pinecone Server URL field callback
+	public function pinecone_server_url_field_callback() {
+		$server_url = esc_attr(get_option('jinx_pinecone_server_url'));
+		echo "<input type='url' name='jinx_pinecone_server_url' value='$server_url' class='regular-text' placeholder='https://your-index-xxxxx.svc.pinecone.io' />";
+		echo "<p class='description'>Optional: Your Pinecone index server URL</p>";
+	}
+
+	// Use Embeddings toggle callback
+	public function use_embeddings_field_callback() {
+		$use_embeddings = get_option('jinx_use_embeddings', false);
+		$checked = $use_embeddings ? 'checked="checked"' : '';
+		echo "<label class='description'>";
+		echo "<input type='checkbox' name='jinx_use_embeddings' value='1' $checked />";
+		echo "Use semantic search with Pinecone embeddings instead of LLM text processing. Requires Pinecone configuration above.</p>";
 	}
 }
 

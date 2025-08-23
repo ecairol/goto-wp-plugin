@@ -1,5 +1,7 @@
 <?php
 // Handles scanning and mapping of WordPress admin menus
+require_once plugin_dir_path(__FILE__) . 'class-embeddings.php';
+
 class Jinx_Menu_Scanner {
 
 	/**
@@ -71,6 +73,9 @@ class Jinx_Menu_Scanner {
 		// Also store as CSV for potentially faster LLM processing
 		$csv_data = self::convert_menus_to_csv($menus);
 		update_option('jinx_admin_menus_csv', $csv_data);
+		
+		// Process menus for Pinecone if configured
+		self::process_embeddings($menus);
 	}
 	
 	/**
@@ -96,6 +101,51 @@ class Jinx_Menu_Scanner {
 		}
 		
 		return implode("\n", $csv_lines);
+	}
+	
+	/**
+	 * Process menus for embeddings and send to Pinecone if configured and enabled
+	 * @param array $menus The scanned menu data
+	 */
+	private static function process_embeddings($menus) {
+		// Skip if embeddings are disabled
+		$use_embeddings = get_option('jinx_use_embeddings', false);
+		if (!$use_embeddings) {
+			error_log('Jinx: Embeddings processing skipped (disabled in settings)');
+			return;
+		}
+		// Convert menu structure to flat list for embeddings
+		$menu_list = array();
+		
+		foreach ($menus as $menu) {
+			// Add parent menu
+			$menu_list[] = array(
+				'title' => $menu['title'],
+				'url' => $menu['url'],
+				'parent' => ''
+			);
+			
+			// Add children with parent reference
+			if (!empty($menu['children'])) {
+				foreach ($menu['children'] as $child) {
+					$menu_list[] = array(
+						'title' => $child['title'],
+						'url' => $child['url'],
+						'parent' => $menu['title']
+					);
+				}
+			}
+		}
+		
+		// Send to Pinecone if configured
+		$success = Jinx_Embeddings::process_menus_to_pinecone($menu_list);
+		
+		// Log success/failure for debugging
+		if ($success) {
+			error_log('Jinx: Successfully processed ' . count($menu_list) . ' menu items to Pinecone');
+		} else {
+			error_log('Jinx: Pinecone processing skipped (not configured or failed)');
+		}
 	}
 
 	public static function mark_for_rescan() {

@@ -1,13 +1,98 @@
 <?php
 // Handles integration with LLM services (OpenAI, Gemini, etc.)
+require_once plugin_dir_path(__FILE__) . 'class-embeddings.php';
+
 class Jinx_LLM {
 	/**
-	 * Search using LLM (OpenAI implementation)
+	 * Search using LLM or embeddings based on settings
 	 * @param string $query
 	 * @param array $menu_list
 	 * @return array
 	 */
 	public static function search($query, $menu_list) {
+		// Check if embeddings are enabled and configured
+		$use_embeddings = get_option('jinx_use_embeddings', false);
+		$pinecone_api_key = get_option('jinx_pinecone_api_key');
+		$pinecone_server_url = get_option('jinx_pinecone_server_url');
+		
+		if ($use_embeddings && !empty($pinecone_api_key) && !empty($pinecone_server_url)) {
+			return self::search_with_embeddings($query);
+		}
+		
+		// Fall back to traditional LLM search
+		return self::search_with_llm($query, $menu_list);
+	}
+	
+	/**
+	 * Search using semantic embeddings via Pinecone
+	 * @param string $query
+	 * @return array
+	 */
+	private static function search_with_embeddings($query) {
+		// Get semantic search results from Pinecone
+		$pinecone_results = Jinx_Embeddings::search_pinecone($query, 10);
+		
+		if ($pinecone_results === false || empty($pinecone_results)) {
+			return [];
+		}
+		
+		// If we have good semantic matches, we can optionally enhance them with LLM ranking
+		$should_enhance = count($pinecone_results) > 5; // Only enhance if we have many results
+		
+		if ($should_enhance) {
+			return self::enhance_semantic_results($query, $pinecone_results);
+		}
+		
+		// Return raw semantic results (already in correct format)
+		return $pinecone_results;
+	}
+	
+	/**
+	 * Enhance semantic search results with LLM ranking/filtering
+	 * @param string $query
+	 * @param array $semantic_results
+	 * @return array
+	 */
+	private static function enhance_semantic_results($query, $semantic_results) {
+		// Create a simpler prompt for ranking/filtering semantic results
+		$results_text = '';
+		foreach ($semantic_results as $i => $result) {
+			$results_text .= ($i + 1) . '. Title: "' . $result['title'] . '" | URL: "' . $result['url'] . "\"\n";
+		}
+		
+		$prompt = "**ROLE:** You are Jinx, a WordPress admin assistant.\n\n"
+			. "**TASK:** The user searched for: \"$query\"\n"
+			. "I found these semantically similar admin pages:\n\n"
+			. $results_text . "\n"
+			. "**INSTRUCTIONS:**\n"
+			. "1. Return a JSON array with the most relevant results for the user's query\n"
+			. "2. Reorder by relevance (most relevant first)\n"
+			. "3. Remove any results that don't make sense for the query\n"
+			. "4. Keep the original title and URL exactly as provided above\n"
+			. "5. Maximum 8 results\n\n"
+			. "**RESPONSE FORMAT:** {\"items\": [{\"title\": \"exact title from above\", \"url\": \"exact url from above\"}, ...]}\n";
+		
+		$response = self::call_llm($prompt, 'json_object');
+		
+		if (!$response) {
+			return $semantic_results; // Fallback to raw semantic results
+		}
+		
+		$response_json = json_decode($response, true);
+		if (isset($response_json['items']) && is_array($response_json['items'])) {
+			return $response_json['items'];
+		}
+		
+		return $semantic_results; // Fallback to raw semantic results
+	}
+	
+	/**
+	 * Traditional LLM-based search (original implementation)
+	 * @param string $query
+	 * @param array $menu_list
+	 * @return array
+	 */
+	private static function search_with_llm($query, $menu_list) {
 		// Get CSV version of menu data for potentially faster LLM processing
 		$csv_menu_data = get_option('jinx_admin_menus_csv');
 		

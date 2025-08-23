@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 require_once plugin_dir_path(__FILE__) . 'includes/class-settings.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-menu-scanner.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-llm.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-embeddings.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-api.php';
 // ... 
 
