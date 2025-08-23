@@ -93,12 +93,24 @@ class Jinx_Settings {
 				<?php wp_nonce_field('jinx_settings_group-options'); ?>
 				<?php submit_button('Rescan Menus', 'secondary', 'jinx_rescan_menus'); ?>
 			</form>
+
+			<hr>
 			<h2>Scanned Admin Menus (Debug)</h2>
+
+			<h3>CSV</h3>
 			<pre style="max-height:400px;overflow:auto;background:#f7f7f7;padding:10px;border:1px solid #ccc;">
-<?php
-$menus = get_option('jinx_admin_menus');
-echo esc_html(json_encode($menus, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-?>
+			<?php
+			$csv_data = get_option('jinx_admin_menus_csv');
+			echo $csv_data;
+			?>
+			</pre>
+
+			<h3>Raw</h3>
+			<pre style="max-height:400px;overflow:auto;background:#f7f7f7;padding:10px;border:1px solid #ccc;">
+			<?php
+			$menus = get_option('jinx_admin_menus');
+			print_r($menus);
+			?>
 			</pre>
 		</div>
 		<?php

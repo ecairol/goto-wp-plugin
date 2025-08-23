@@ -8,22 +8,21 @@ class Jinx_LLM {
 	 * @return array
 	 */
 	public static function search($query, $menu_list) {
-		// Build prompt with instructions and examples
-		$menu_lines = array_map(function($item) {
-			return '- ' . $item['title'] . ($item['url'] ? ' (' . $item['url'] . ')' : '');
-		}, $menu_list);
-
-		$json_menu_list = json_encode($menu_list);
+		// Get CSV version of menu data for potentially faster LLM processing
+		$csv_menu_data = get_option('jinx_admin_menus_csv');
+		
+		// Fallback to generating CSV from menu_list if not available
+		if (!$csv_menu_data) {
+			$csv_menu_data = self::convert_to_csv($menu_list);
+		}
 
 		$prompt = "**ROLE & CONTEXT:**\n"
 			. "You are Jinx, a specialized AI assistant for the WordPress admin. Your task is to act as a smart search filter for a list of admin menu pages. You must be fast, accurate, and concise.\n\n"
-			. "**MASTER INSTRUCTION:**\n"
-			. "You will be given a JSON array of objects named 'AVAILABLE_MENU_ITEMS'. Each object has a 'title' and a 'url'.\n"
-			. "Based on the 'USER_QUERY', you must return a new, filtered JSON array containing only the objects from the original list that are relevant to the query. The structure of the returned objects must be identical to the input.\n\n"
-			. "AVAILABLE_MENU_ITEMS:\n"
-			. $json_menu_list . "\n\n"
+			. "**MAIN INSTRUCTION:**\n"
+			. "You will be given a CSV table of admin menu items with columns: title, url, parent.\n"
+			. "Based on the 'USER_QUERY', you must return a JSON array containing only the relevant menu items from the CSV. Each returned object must have 'title' and 'url' fields exactly as they appear in the CSV.\n\n"
 			. "**CRITICAL RULES FOR FILTERING:**\n"
-			. "1.  **Strict Adherence to List:** This is the most important rule. You MUST ONLY return items from the 'AVAILABLE MENU ITEMS' list. Do NOT invent, hallucinate, or suggest items that are not in the list, even if they seem plausible.\n"
+			. "1.  **Strict Adherence to CSV:** This is the most important rule. You MUST ONLY return items that exist in the CSV table above. Do NOT invent, hallucinate, or suggest items that are not in the table, even if they seem plausible.\n"
 			. "2.  **Broad Conceptual Matching:** Go beyond literal words to understand the user's *intent*. Match based on:\n"
 			. "    - **Abstract Concepts:** Deconstruct high-level ideas. For 'money', think about what represents money in this system: sales, orders, payment gateways, reports, etc.\n"
 			. "    - **Intent-to-Tool Mapping:** When users describe what they want to DO, find the WordPress tools/sections that enable that action. 'send an email' → email campaigns, subscribers; 'backup site' → export/backup tools; 'customize look' → themes, customizer.\n"
@@ -36,49 +35,61 @@ class Jinx_LLM {
 			. "**EXAMPLES:**\n"
 			. "- Query: 'send an email' -> [{\"title\": \"Email Campaigns\", \"url\": \"...\"}, {\"title\": \"Subscribers\", \"url\": \"...\"}, {\"title\": \"Email Settings\", \"url\": \"...\"}]\n"
 			. "- Query: 'money' -> [{\"title\": \"WooCommerce > Orders\", \"url\": \"...\"}, {\"title\": \"WooCommerce > Reports\", \"url\": \"...\"}, {\"title\": \"PayPal Settings\", \"url\": \"...\"}]\n"
-			. "- Query: 'people' -> [{\"title\": \"Users\", ...}, {\"title\": \"WooCommerce > Customers\", ...}]\n"
-			. "- Query: 'write a new article' -> [{\"title\": \"Posts > Add New\", ...}]\n"
-			. "- Query: 'pulgins' -> [{\"title\": \"Plugins\", ...}]\n"
-			. "- Query: 'campaña' -> [{\"title\": \"Campaigns\", ...}]\n"
+			. "- Query: 'people' -> [{\"title\": \"Users\", \"url\": \"...\"}, {\"title\": \"WooCommerce > Customers\", \"url\": \"...\"}]\n"
+			. "- Query: 'write a new article' -> [{\"title\": \"Posts > Add New\", \"url\": \"...\"}]\n"
+			. "- Query: 'pulgins' -> [{\"title\": \"Plugins\", \"url\": \"...\"}]\n"
+			. "- Query: 'campaña' -> [{\"title\": \"Campaigns\", \"url\": \"...\"}]\n"
 			. "- Query: 'a non-existent page'\n"
 			. "- Based on the list, you would return: []\n\n"
 			. "---\n"
+			. "**RESPONSE FORMAT:**\n"
+			. "Your response MUST be a valid JSON array and nothing else. No introductory text, no explanations, no apologies. If no items match, return `{items:[]}`.\n\n"
+			. "{\"items\": [{\"title\": \"...\", \"url\": \"...\"}, ...]}\n\n"
+			. "**AVAILABLE_MENU_ITEMS (CSV):**\n"
+			. "The following is a CSV table of admin menu items with columns: title, url, parent of the available menu items. This is the list of items that you can choose from.\n"
+			. $csv_menu_data . "\n\n"
 			. "USER_QUERY: '" . $query . "'";
 
-		// Call OpenAI API
-		$response = self::call_llm( $prompt );
+		// Call LLM API
+		
+		$response      = self::call_llm( $prompt, 'json_object' );
+		
+		// Convert JSON to PHP array, and return sub-items
+		$response_json = json_decode($response, true);
+		return $response_json['items'];
 
-		if ( isset( $response['error'] ) ) {
-			return [
-				[
-					'title' => $response['error'] . ' ' . $response['message'],
-					'url' => '',
-					'slug' => '',
-					'parent' => '',
-				]
-			];
-		}
+		// $response_json = json_encode($response);
 
-		// Parse response (expecting a JSON array)
-		$matches = [];
-		if (preg_match('/\[.*\]/s', $response, $json_match)) {
-			$matches = json_decode($json_match[0], true);
-		}
-		if (!is_array($matches)) {
-			$matches = [
-				[
-					'title' => 'Could not parse LLM response',
-					'url' => '',
-					'slug' => '',
-					'parent' => '',
-				]
-			];
-		}
-		return $matches;
+		// if ( empty( $response_json ) ) {
+		// 	return [
+		// 		[
+		// 			'title' => $response['error'] . ' ' . $response['message'],
+		// 			'url' => '',
+		// 		]
+		// 	];
+		// }
+
+		// return $response_json;
 	}
 
+	/**
+	 * Convert menu array to CSV format (fallback)
+	 */
+	private static function convert_to_csv($menu_list) {
+		$csv_lines = array();
+		$csv_lines[] = 'title,url,parent'; // CSV header
+		
+		foreach ($menu_list as $item) {
+			$parent = isset($item['parent']) && $item['parent'] ? $item['parent'] : '';
+			$csv_lines[] = '"' . str_replace('"', '""', $item['title']) . '","' . 
+						   str_replace('"', '""', $item['url']) . '","' . 
+						   str_replace('"', '""', $parent) . '"';
+		}
+		
+		return implode("\n", $csv_lines);
+	}
 
-	private static function call_llm( $prompt ) {
+	private static function call_llm( $prompt, $format = 'text' ) {
 		$api_key  = get_option('jinx_llm_api_key');
 		$provider = get_option('jinx_llm_service', 'openai');
 
@@ -90,9 +101,9 @@ class Jinx_LLM {
 		}
 		
 		if ( $provider === 'openai' ) {
-			$response = self::call_openai( $api_key, $prompt );
+			$response = self::call_openai( $api_key, $prompt, $format );
 		} elseif ( $provider === 'gemini' ) {
-			$response = self::call_gemini( $api_key, $prompt );
+			$response = self::call_gemini( $api_key, $prompt, $format );
 		} else {
 			return [
 				'error' => 'Unsupported LLM provider: ' . $provider,
@@ -110,7 +121,7 @@ class Jinx_LLM {
 		return $response;
 	}
 
-	private static function call_openai($api_key, $prompt) {
+	private static function call_openai($api_key, $prompt, $format = 'text') {
 		$response = wp_remote_post('https://api.openai.com/v1/chat/completions', array(
 			'headers' => array(
 				'Content-Type' => 'application/json',
@@ -123,7 +134,10 @@ class Jinx_LLM {
 					array('role' => 'user', 'content' => $prompt),
 				),
 				'max_tokens' => 1024,
-				'temperature' => 0.5,
+				'temperature' => 0.8,
+				'response_format' => array(
+					'type' => $format,
+				),
 			)),
 			'timeout' => 15,
 		));
@@ -142,7 +156,7 @@ class Jinx_LLM {
 		return false;
 	}
 
-	private static function call_gemini($api_key, $prompt) {
+	private static function call_gemini($api_key, $prompt, $format = 'text') {
 		$response = wp_remote_post('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' . $api_key, array(
 			'headers' => array(
 				'Content-Type' => 'application/json',
@@ -158,6 +172,7 @@ class Jinx_LLM {
 				'generationConfig' => array(
 					'temperature' => 0.5,
 					'maxOutputTokens' => 1024,
+					'responseMimeType' => $format,
 				)
 			)),
 			'timeout' => 15,

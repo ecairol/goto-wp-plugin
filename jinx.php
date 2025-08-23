@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Jinx
-Description: Quickly find and navigate to any WordPress admin screen using AI-powered search.
+Description: Quickly find and navigate to any WordPress Admin screen using AI-powered search. Cmd + J / Ctrl + J.
 Version: 0.1.0
 Author: ecairol
 */

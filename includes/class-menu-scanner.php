@@ -67,8 +67,37 @@ class Jinx_Menu_Scanner {
 			}
 		}
 		update_option('jinx_admin_menus', $menus);
+		
+		// Also store as CSV for potentially faster LLM processing
+		$csv_data = self::convert_menus_to_csv($menus);
+		update_option('jinx_admin_menus_csv', $csv_data);
 	}
 	
+	/**
+	 * Convert menu array to CSV format for LLM processing
+	 */
+	private static function convert_menus_to_csv($menus) {
+		$csv_lines = array();
+		$csv_lines[] = 'title,url,parent'; // CSV header
+		
+		foreach ($menus as $menu) {
+			// Add parent menu
+			$csv_lines[] = '"' . str_replace('"', '""', $menu['title']) . '","' . 
+						   str_replace('"', '""', $menu['url']) . '",""';
+			
+			// Add children
+			if (!empty($menu['children'])) {
+				foreach ($menu['children'] as $child) {
+					$csv_lines[] = '"' . str_replace('"', '""', $child['title']) . '","' . 
+								   str_replace('"', '""', $child['url']) . '","' . 
+								   str_replace('"', '""', $menu['title']) . '"';
+				}
+			}
+		}
+		
+		return implode("\n", $csv_lines);
+	}
+
 	public static function mark_for_rescan() {
 		// Set an option that tells us to rescan menus on the next admin request.
 		update_option( 'jinx_admin_menu_rescan_pending', true );

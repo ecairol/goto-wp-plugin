@@ -59,7 +59,7 @@
 				showResults('');
 			})
 			.fail(function() {
-				results.html('<li style="color:red;">Failed to load menus</li>');
+				results.html('<li>Failed to load menus</li>');
 			});
 	}
 
@@ -88,6 +88,7 @@
 			return;
 		}
 
+        // Show resuts with local data from WordPress menus.
 		let filtered = menuData.filter(item => item.title.toLowerCase().includes(query.toLowerCase()));
 		if (filtered.length === 0) {
 			results.html('<li>No results found</li>');
@@ -127,7 +128,7 @@
             $('#jinx-llm-suggestions').removeClass('jinx-loading');
 			if (query !== lastQuery) return; // Only show if still relevant
 			if (data.llm && data.llm.length > 0) {
-				let html = '<h3>AI Suggestions</h3>';
+				let html = '<h3>Jinx AI Suggestions</h3>';
 				data.llm.forEach(function(item) {
 					html += `<div class="jinx-llm-suggestion"><a href="${item.url || '#'}">${item.title}</a></div>`;
 				});
