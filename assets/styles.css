@@ -31,6 +31,30 @@
 	padding: 8px 12px;
 	font-size: 16px;
 	margin-bottom: 12px;
+	border: 2px solid #ddd;
+	border-radius: 4px;
+	transition: border-color 0.3s ease;
+}
+
+.jinx-modal-input:focus {
+	outline: none;
+	border-color: #695d77;
+}
+
+.jinx-modal-input.jinx-loading {
+	border-color: #695d77;
+	background-image: linear-gradient(90deg, transparent 0%, rgba(105, 93, 119, 0.1) 50%, transparent 100%);
+	background-size: 200% 100%;
+	animation: jinx-input-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes jinx-input-loading {
+	0% {
+		background-position: -200% 0;
+	}
+	100% {
+		background-position: 200% 0;
+	}
 }
 
 #jinx-modal-results {

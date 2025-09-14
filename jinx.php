@@ -29,7 +29,7 @@ add_action('admin_enqueue_scripts', function() {
 	wp_enqueue_style('jinx-styles', plugin_dir_url(__FILE__) . 'assets/styles.css');
 	wp_enqueue_script('jinx-modal', plugin_dir_url(__FILE__) . 'js/modal.js', array('jquery'), null, true);
 	wp_localize_script('jinx-modal', 'Jinx', array(
-		'apiUrl' => rest_url('jinx/v1/menus'),
+		'apiUrl' => rest_url('jinx/v1/'),
 		'nonce'  => wp_create_nonce('wp_rest'),
 		'llmService' => get_option('jinx_llm_service', ''),
 	));

@@ -44,23 +44,37 @@
 		modal.hide();
 		overlay.hide();
 		if (llmTimeout) clearTimeout(llmTimeout);
+		hideLoading();
+	}
+
+	function showLoading() {
+        input.attr('placeholder', 'Hold on while I load the menus...');
+		input.addClass('jinx-loading').attr('disabled', 'disabled');
+	}
+
+	function hideLoading() {
+        input.attr('placeholder', 'What are you looking for?');
+		input.removeClass('jinx-loading').removeAttr('disabled').focus();
 	}
 
 	function fetchMenus() {
+		showLoading();
 		$.ajax({
-			url: Jinx.apiUrl,
+			url: Jinx.apiUrl + 'menus',
 			method: 'GET',
 			beforeSend: function(xhr) {
 				xhr.setRequestHeader('X-WP-Nonce', Jinx.nonce);
 			}
 		})
-			.done(function(data) {
-				menuData = flattenMenus(data);
-				showResults('');
-			})
-			.fail(function() {
-				results.html('<li>Failed to load menus</li>');
-			});
+		.done(function(data) {
+			hideLoading();
+			menuData = flattenMenus(data);
+			showResults('');
+		})
+		.fail(function() {
+			hideLoading();
+			results.html('<li>Failed to load menus</li>');
+		});
 	}
 
 	function flattenMenus(data) {
@@ -120,7 +134,7 @@
 
 	function fetchLLMSuggestions(query) {
 		$.ajax({
-			url: Jinx.apiUrl.replace('/menus', '/search'),
+			url: Jinx.apiUrl + 'search',
 			type: 'POST',
 			data: JSON.stringify({ query: query }),
 			contentType: 'application/json',
